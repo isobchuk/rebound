@@ -1,0 +1,6 @@
+# Build output
+output/
+
+# IDE files
+.vscode/
+.vs/
