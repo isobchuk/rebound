@@ -1,5 +1,5 @@
 # Project name
-TARGET	= basketball
+TARGET	= Rebound
 
 # Compiler system
 CC		= clang
