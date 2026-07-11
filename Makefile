@@ -8,7 +8,7 @@ AR		= llvm-ar
 SIZE	= llvm-size
 
 # Global Defines for the different configurations (others can be added)
-DEFINES =
+DEFINES = -DUNICODE
 DEFINES_DEBUG =
 DEFINES_RELEASE = -DNDEBUG
 

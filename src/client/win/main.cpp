@@ -1,12 +1,16 @@
-#ifndef UNICODE
-#define UNICODE
-#endif
 
 #include <Windows.h>
+
+#include "client/log.hpp"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pCmdLine*/, int nCmdShow) {
+  static rebound::log::Puts puts;
+  static constexpr isoeng::log::Log log{puts, isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"main">};
+
+  log.info(isoeng::log::string<"Rebound game is here!">);
+
   // Register the window class.
   const wchar_t CLASS_NAME[] = L"Sample Window Class";
 
