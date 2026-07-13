@@ -74,7 +74,7 @@ FLAGS		= $(SYMBOLS) $(OPTIMIZE) $(DEFINES) -I$(GLOBAL_INCLUDE)
 CFLAGS		=
 CXXFLAGS 	= $(STANDARD) -fdata-sections -ffunction-sections -fno-rtti -fno-exceptions
 LDFLAGS		= -Wl,/MACHINE:X64 -Wl,/OPT:REF
-LIBS		= -mwindows -luser32
+LIBS		= -mwindows -luser32 -ld3d12
 
 include $(ROOT)build/main.mk
 

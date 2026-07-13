@@ -3,6 +3,8 @@
 
 #include "client/log.hpp"
 
+#include "engine/graphics/d3d12/renderer.hpp"
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pCmdLine*/, int nCmdShow) {
@@ -10,6 +12,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
   static constexpr isoeng::log::Log log{puts, isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"main">};
 
   log.info(isoeng::log::string<"Rebound game is here!">);
+
+  isoeng::graphics::d3d12::Renderer renderer;
 
   // Register the window class.
   const wchar_t CLASS_NAME[] = L"Sample Window Class";
