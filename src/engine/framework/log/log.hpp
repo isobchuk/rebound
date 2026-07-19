@@ -1,29 +1,10 @@
 #pragma once
 
-#include <source_location>
-
 #include "engine/framework/log/format.hpp"
+#include "engine/framework/log/time.hpp"
 
 // Basic namespace to work with log component
 namespace isoeng::log {
-
-/**
- * @brief     Concept to check the provided type has tick() method (should return the time from launch in ms (unsigned integral))
- *
- * @tparam T  The type should be checked
- */
-template <typename T>
-concept time_func = requires(T &tick) {
-  { tick.tick() } -> std::unsigned_integral;
-};
-
-/**
- * @brief     Concept to check that type is appropriate to isoeng::log::put and time_func concepts
- *
- * @tparam T  The type should be checked
- */
-template <typename T>
-concept time = isoeng::log::put<T> && time_func<T>;
 
 /**
  * @brief Enumeration of the trace levels
@@ -86,15 +67,13 @@ concept log_level = requires(T) {
  * @tparam LogLevel     The type that should be satisfied to log_level concept (all messages below the provided log_level will be ignored)
  * @tparam Component    The type that should be satisfied to isoeng::log::const_string concept
  */
-template <time Output, log_level LogLevel = TraceLevel<Trace::All>, isoeng::log::const_string Component = decltype(isoeng::log::string<"">)>
-class Log final {
-  const Output &out;                                             // Reference to the Output object
+template <log_level LogLevel = TraceLevel<Trace::All>, isoeng::log::const_string Component = decltype(isoeng::log::string<"">)> class Log final {
   static constexpr Trace level = LogLevel::level;                // Logging level that has been requested
   static constexpr auto component = Component{};                 // Name of the component
   static constexpr TraceHighlight<LogLevel::colour> highlight{}; // Trace highlight
 
 public:
-  const isoeng::log::Format<Output> format; // The compile time format object (just to provide access if needed)
+  const isoeng::log::Format format; // The compile time format object (just to provide access if needed)
 
   /**
    * @brief           Compile-time constructors with the only one mandatory parameter
@@ -106,10 +85,10 @@ public:
    * @example         static constexpr isoeng::log::Log debug{debugPuts, format::string<"UART">};
    * @example         static constexpr isoeng::log::Log debug{debugPuts, log::log_lvl<log::Trace::Warn>, format::string<"GLOBAL">};
    */
-  consteval Log(const Output &o) : out(o), format(o) {}
-  consteval Log(const Output &o, const LogLevel = LogLevel{}) : out(o), format(o) {}
-  consteval Log(const Output &o, const Component = Component{}) : out(o), format(o) {}
-  consteval Log(const Output &o, const LogLevel = LogLevel{}, const Component = Component{}) : out(o), format(o) {}
+  consteval Log() : format() {}
+  consteval Log(const LogLevel = LogLevel{}) : format() {}
+  consteval Log(const Component = Component{}) : format() {}
+  consteval Log(const LogLevel = LogLevel{}, const Component = Component{}) : format() {}
 
   /**
    * @brief         Function to print line with time mark
@@ -120,7 +99,7 @@ public:
   template <isoeng::log::const_string S, typename... Args> inline void message(const S, const Args... args) const {
     using namespace isoeng::log;
     constexpr auto res_str = string<"[%t] [MESSAGE] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-    format.println(res_str, out.tick(), args...);
+    format.println(res_str, Time::Get(), args...);
   }
 
   /**
@@ -134,7 +113,7 @@ public:
   inline void message(const S, const isoeng::log::DataBuffer &dataBuffer, const Args... args) const {
     using namespace isoeng::log;
     constexpr auto res_str = string<"[%t] [MESSAGE] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-    format.printf(res_str, dataBuffer, out.tick(), args...);
+    format.printf(res_str, dataBuffer, Time::Get(), args...);
   }
 
   /**
@@ -147,7 +126,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Fatal >= level) {
       constexpr auto res_str = string<"[%t] [FATAL] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.println(res_str, out.tick(), args...);
+      format.println(res_str, Time::Get(), args...);
     }
   }
 
@@ -163,7 +142,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Fatal >= level) {
       constexpr auto res_str = string<"[%t] [FATAL] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.printf(res_str, dataBuffer, out.tick(), args...);
+      format.printf(res_str, dataBuffer, Time::Get(), args...);
     }
   }
 
@@ -177,7 +156,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Error >= level) {
       constexpr auto res_str = string<"[%t] [ERROR] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.println(res_str, out.tick(), args...);
+      format.println(res_str, Time::Get(), args...);
     }
   }
 
@@ -193,7 +172,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Error >= level) {
       constexpr auto res_str = string<"[%t] [ERROR] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.printf(res_str, dataBuffer, out.tick(), args...);
+      format.printf(res_str, dataBuffer, Time::Get(), args...);
     }
   }
 
@@ -207,7 +186,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Warn >= level) {
       constexpr auto res_str = string<"[%t] [WARN] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.println(res_str, out.tick(), args...);
+      format.println(res_str, Time::Get(), args...);
     }
   }
 
@@ -223,7 +202,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Warn >= level) {
       constexpr auto res_str = string<"[%t] [WARN] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.printf(res_str, dataBuffer, out.tick(), args...);
+      format.printf(res_str, dataBuffer, Time::Get(), args...);
     }
   }
 
@@ -237,7 +216,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Info >= level) {
       constexpr auto res_str = string<"[%t] [INFO] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.println(res_str, out.tick(), args...);
+      format.println(res_str, Time::Get(), args...);
     }
   }
 
@@ -253,7 +232,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Info >= level) {
       constexpr auto res_str = string<"[%t] [INFO] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.printf(res_str, dataBuffer, out.tick(), args...);
+      format.printf(res_str, dataBuffer, Time::Get(), args...);
     }
   }
 
@@ -267,7 +246,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Debug >= level) {
       constexpr auto res_str = string<"[%t] [DEBUG] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.println(res_str, out.tick(), args...);
+      format.println(res_str, Time::Get(), args...);
     }
   }
 
@@ -283,7 +262,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Debug >= level) {
       constexpr auto res_str = string<"[%t] [DEBUG] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.printf(res_str, dataBuffer, out.tick(), args...);
+      format.printf(res_str, dataBuffer, Time::Get(), args...);
     }
   }
 
@@ -297,7 +276,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Trace >= level) {
       constexpr auto res_str = string<"[%t] [TRACE] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.println(res_str, out.tick(), args...);
+      format.println(res_str, Time::Get(), args...);
     }
   }
 
@@ -313,7 +292,7 @@ public:
     using namespace isoeng::log;
     if constexpr (Trace::Trace >= level) {
       constexpr auto res_str = string<"[%t] [TRACE] "> + string<"["> + component + string<"]"> + string<": "> + string<S::string>;
-      format.printf(res_str, dataBuffer, out.tick(), args...);
+      format.printf(res_str, dataBuffer, Time::Get(), args...);
     }
   }
 };

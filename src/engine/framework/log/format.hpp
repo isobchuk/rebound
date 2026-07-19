@@ -1,18 +1,9 @@
 #pragma once
 
+#include "engine/framework/log/ostream.hpp"
 #include "engine/framework/log/string.hpp"
 
 namespace isoeng::log {
-
-/**
- * @brief   Concept to check the provided type has puts(const char *) method (for putting strings to any interface)
- *
- * @tparam  T The type should be checked
- */
-template <typename T>
-concept put = requires(T &put, const char (&buff)[10]) {
-  { put.puts(buff) };
-};
 
 /**
  * @brief Type that contains some dynamic buffer to print (with the specific overloading of printf)
@@ -27,11 +18,8 @@ struct DataBuffer {
 
 /**
  * @brief Consteval class that prints formatted strings
- *
- * @tparam Puts Type that fit into that put concept
  */
-template <put Puts> class Format {
-  const Puts &puts; // Reference to the callback put object
+class Format final {
 
   // Enumeration of the available specifiers
   enum Specifier : char {
@@ -315,13 +303,11 @@ template <put Puts> class Format {
 public:
   /**
    * @brief Consteval constructor for the object
-   *
-   * @param p reference to the Puts object (with callback function to some output (Debugger, UART, USB, et cetera))
    */
-  consteval Format(const Puts &p) : puts(p) {}
+  consteval Format() = default;
 
   /**
-   * @brief         The main fuction of the formatter, passes string to the put.puts() function
+   * @brief         The main fuction of the formatter, passes string to the ostream
    *                Checks and calculations are performed in compile-time (if it is possible)
    *
    * @param str     Compile time string string with the specifiers to be formatted
@@ -383,8 +369,12 @@ public:
     };
     parse(parse, args...);
 
+    auto *stream = Ostream::Get();
+    if (stream) [[likely]] {
+      (*stream) << buffer;
+    }
+
     // Pass result to the output
-    puts.puts(buffer);
     return counterResult;
   }
 
@@ -395,7 +385,10 @@ public:
   template <typename S>
   requires const_string<S>
   inline usize printf(const S) const {
-    puts.puts(S::string);
+    const auto *stream = Ostream::Get();
+    if (stream) [[likely]] {
+      stream << S::string;
+    }
     return sizeof(S::string);
   }
 
@@ -411,7 +404,7 @@ public:
    *
    * @return            Number of the written symbols
    */
-  template <typename S, typename... Args>
+  /*template <typename S, typename... Args>
   requires const_string<S>
   inline usize printf(const S str, const DataBuffer &dataBuffer, const Args... args) const {
     if (nullptr == dataBuffer.data) {
@@ -425,11 +418,11 @@ public:
       buffer[1] = (val < 0xA) ? val + '0' : val + ('A' - 0xA);
       val = dataBuffer.data[i] & 0xF;
       buffer[2] = (val < 0xA) ? val + '0' : val + ('A' - 0xA);
-      puts.puts(buffer);
+      puts.puts(buffer, dataBuffer.length);
     }
-    puts.puts("\n");
+    puts.puts("\n", sizeof("\n"));
     return (sizeof(buffer) - 1) * dataBuffer.length + len + (sizeof("\n") - 1);
-  }
+  }*/
 
   /**
    * @brief   Print line (printf with added "\n" at the end of string in the compile-time)

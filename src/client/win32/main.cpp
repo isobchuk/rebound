@@ -1,15 +1,24 @@
 
 #include <Windows.h>
+#include <fstream>
+#include <iostream>
 
-#include "client/log.hpp"
-
+#include "engine/framework/log/log.hpp"
 #include "engine/graphics/d3d12/renderer.hpp"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pCmdLine*/, int nCmdShow) {
-  static rebound::log::Puts puts;
-  static constexpr isoeng::log::Log log{puts, isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"main">};
+  using namespace isoeng::log;
+
+  std::ofstream outfile("rebound.log");
+  if (!outfile.is_open()) {
+    std::cerr << "Failed to open file for writing.\n";
+    return 1;
+  }
+
+  [[maybe_unused]] const auto &outstream = Ostream::Init(&outfile);
+  constexpr Log log(log_lvl<Trace::All>, string<"main">);
 
   log.info(isoeng::log::string<"Rebound game is here!">);
 
