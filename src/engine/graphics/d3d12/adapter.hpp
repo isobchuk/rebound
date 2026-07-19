@@ -1,12 +1,20 @@
 #pragma once
 
-#include <d3d12.h>
+#include <dxgi1_6.h>
+
+#include "engine\framework\log\log.hpp"
+#include "engine\platform\pointer\win32\com.hpp"
 
 namespace isoeng::graphics::d3d12 {
 
 class Adapter {
 
 public:
-  Adapter();
+  Adapter(IDXGIFactory4 **factory);
+
+private:
+  static constexpr isoeng::log::Log _log{isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"engine.graphics.drd12.adapter">};
+
+  isoeng::pointer::win32::ComPtr<IDXGIAdapter4> _adapter;
 };
 } // namespace isoeng::graphics::d3d12
