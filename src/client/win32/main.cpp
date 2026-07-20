@@ -22,7 +22,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
 
   log.info(isoeng::log::string<"Rebound game is here!">);
 
-  isoeng::graphics::d3d12::Renderer renderer;
+  const auto renderer = isoeng::graphics::d3d12::Renderer::Create();
 
   // Register the window class.
   const wchar_t CLASS_NAME[] = L"Sample Window Class";

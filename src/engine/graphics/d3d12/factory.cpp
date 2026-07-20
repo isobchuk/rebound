@@ -2,4 +2,18 @@
 
 using namespace isoeng::graphics::d3d12;
 
-Factory::Factory() { CreateDXGIFactory2(0U, IID_PPV_ARGS(&_factory)); }
+[[nodiscard]] std::expected<Factory, Factory::Error> Factory::Create() {
+  using namespace isoeng::pointer::win32;
+  using enum Error;
+
+  constexpr auto FLAGS = 0U;
+
+  ComPtr<IDXGIFactory4> factory;
+  if (FAILED(CreateDXGIFactory2(FLAGS, IID_PPV_ARGS(&factory)))) {
+    return std::unexpected(ERROR_CREATION);
+  }
+
+  return Factory(std::move(factory));
+}
+
+Factory::Factory(const isoeng::pointer::win32::ComPtr<IDXGIFactory4> f) : _factory(std::move(f)) {}

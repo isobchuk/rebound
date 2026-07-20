@@ -7,12 +7,16 @@
 namespace isoeng::graphics::d3d12 {
 
 class Renderer {
-  isoeng::graphics::d3d12::Factory _factory;
-  isoeng::graphics::d3d12::Adapter _adapter;
+public:
+  enum class Error { NO };
+  [[nodiscard]] static std::expected<Renderer, Error> Create();
+
+private:
+  const Factory _factory;
+  const Adapter _adapter;
   isoeng::graphics::d3d12::Device _device;
 
-public:
-  Renderer();
+  Renderer(const Factory &&f, const Adapter &&a);
 };
 
 } // namespace isoeng::graphics::d3d12
