@@ -6,15 +6,17 @@ Adapter::Adapter(IDXGIFactory4 **factory) {
   using namespace isoeng::log;
 
   if (factory) [[likely]] {
+    using namespace isoeng::log;
     isoeng::pointer::win32::ComPtr<IDXGIAdapter1> adapter1;
 
     for (u32 i = 0U; DXGI_ERROR_NOT_FOUND != (*factory)->EnumAdapters1(i, &adapter1); i++) {
       DXGI_ADAPTER_DESC1 descriptor;
       adapter1->GetDesc1(&descriptor);
 
-      _log.info(string<"Found adapter %u with dedicated video memory %u">, i, descriptor.DedicatedVideoMemory);
+      const ASCIIString name(descriptor.Description);
+      _log.info(string<"Found adapter %u: %s with dedicated video memory %u bytes.">, i, name, descriptor.DedicatedVideoMemory);
     }
   } else {
-    _log.error(string<"No valid factory provided">);
+    _log.error(string<"No valid factory provided!">);
   }
 }

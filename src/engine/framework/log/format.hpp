@@ -29,7 +29,8 @@ class Format final {
     UnsignedDecimalInteger = 'u',
     UnsignedHexadecimalInteger = 'X',
     Character = 'c',
-    StringOfCharacters = 's',
+    StringOfCharacters = 'S',
+    ASCIIString = 's',
     PointerAddress = 'p',
     Time = 't',
     Boolean = 'b'
@@ -41,6 +42,7 @@ class Format final {
                                              Specifier::UnsignedHexadecimalInteger,
                                              Specifier::Character,
                                              Specifier::StringOfCharacters,
+                                             Specifier::ASCIIString,
                                              Specifier::PointerAddress,
                                              Specifier::Time,
                                              Specifier::Boolean};
@@ -236,12 +238,29 @@ class Format final {
   template <typename Type> struct SpecCheck<Specifier::StringOfCharacters, Type> {
     static constexpr auto valid = is_string_v<Type>;
     static constexpr auto length = sizeof(Type::string) - 1;
-    static_assert(valid, "ERROR: The '%s' specifier supports only String!");
+    static_assert(valid, "ERROR: The '%S' specifier supports only String!");
     template <typename W> static usize formatArg(char *buffer, Type, const W) {
       for (usize i = 0; i < length; i++) {
         buffer[i] = Type::string[i];
       }
       return length;
+    }
+  };
+
+  // Overload for the dynamic strings
+  template <typename Type> struct SpecCheck<Specifier::ASCIIString, Type> {
+    static constexpr auto valid = true; // TODO: Add concept
+    static constexpr auto length = Type::size() - 1;
+    static_assert(valid, "ERROR: The '%s' specifier supports only ASCII String!");
+    template <typename W> static usize formatArg(char *buffer, Type arg, const W) {
+      usize i = 0UL;
+      for (i = 0; i < length; i++) {
+        if ('\0' == arg.c_str()[i]) [[unlikely]] {
+          break;
+        }
+        buffer[i] = arg.c_str()[i];
+      }
+      return i;
     }
   };
 
