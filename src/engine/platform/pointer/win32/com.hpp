@@ -1,21 +1,27 @@
 #pragma once
 
+#include <concepts>
+
+#include <guiddef.h>
+#include <winnt.h>
+
 namespace isoeng::pointer::win32 {
 
-// concept com_
+template <typename T>
+concept IUnknownInterface = requires(T &comObject, void *p) {
+  { comObject.AddRef() } -> std::convertible_to<u64>;
+  { comObject.Release() } -> std::convertible_to<u64>;
+  { comObject.QueryInterface(GUID{}, &p) } -> std::convertible_to<HRESULT>;
+};
 
-template <typename T> class ComPtr final {
+template <IUnknownInterface T> class ComPtr final {
 public:
   constexpr ComPtr() noexcept : _ptr() {}
   constexpr ComPtr(std::nullptr_t) noexcept : _ptr() {}
 
-  ~ComPtr() {
-    if (_ptr) [[likely]] {
-      _ptr->Release();
-    }
-  }
+  ~ComPtr() { Reset(); }
 
-  ComPtr(T *other) : _ptr(other) {
+  explicit ComPtr(T *other) : _ptr(other) {
     if (_ptr) [[likely]] {
       _ptr->AddRef();
     }
@@ -29,9 +35,7 @@ public:
 
   ComPtr &operator=(const ComPtr &other) {
     if (this != &other) [[likely]] {
-      if (_ptr) [[likely]] {
-        _ptr->Release();
-      }
+      Reset();
       _ptr = other._ptr;
       if (_ptr) [[likely]] {
         _ptr->AddRef();
@@ -44,20 +48,33 @@ public:
 
   ComPtr &operator=(ComPtr &&other) {
     if (this != &other) [[likely]] {
-      if (_ptr) [[likely]] {
-        _ptr->Release();
-      }
+      Reset();
+
       _ptr = other._ptr;
       other._ptr = nullptr;
     }
     return *this;
   }
 
-  //[[nodiscard]] inline T *const *operator&() const noexcept { return &_ptr; }
-  [[nodiscard]] inline T **operator&() noexcept { return &_ptr; }
+  [[nodiscard]] inline T *const *Out() const noexcept { return &_ptr; }
+  [[nodiscard]] inline T **Out() noexcept { return &_ptr; }
 
-  [[nodiscard]] inline T *operator->() const noexcept { return _ptr; }
+  [[nodiscard]] inline T *const Get() const noexcept { return _ptr; }
+  [[nodiscard]] inline T *Get() noexcept { return _ptr; }
+
   [[nodiscard]] inline explicit operator bool() const noexcept { return _ptr != nullptr; }
+
+  template <typename U> [[nodiscard]] inline HRESULT As(ComPtr<U> &out) const {
+    out.Reset();
+    return _ptr->QueryInterface(__uuidof(U), reinterpret_cast<void **>(out.Out()));
+  }
+
+  void Reset() noexcept {
+    if (_ptr) [[likely]] {
+      _ptr->Release();
+      _ptr = nullptr;
+    }
+  }
 
 private:
   T *_ptr;

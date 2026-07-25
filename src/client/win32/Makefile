@@ -14,4 +14,6 @@ SOURCES 	:= $(notdir $(wildcard ./*.cpp) $(wildcard ./*.c))
 OBJECTS 	:= $(SOURCES:.cpp=.o)
 OBJECTS 	:= $(addprefix $(OBJ_FOLDER)/, $(OBJECTS:.c=.o))
 
+WARNINGS_NO += -Wno-language-extension-token
+
 include $(ROOT)build/build.mk

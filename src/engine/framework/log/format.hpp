@@ -2,6 +2,8 @@
 
 #include "engine/framework/log/ostream.hpp"
 #include "engine/framework/log/string.hpp"
+#include "engine/framework/string.hpp"
+
 
 namespace isoeng::log {
 

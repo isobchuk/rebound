@@ -8,7 +8,7 @@ namespace isoeng::graphics::d3d12 {
 
 class Renderer {
 public:
-  enum class Error { NO };
+  enum class Error { NO, CREATION_ERROR_FACTORY, CREATION_ERROR_ADAPTER };
   [[nodiscard]] static std::expected<Renderer, Error> Create();
 
 private:

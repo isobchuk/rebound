@@ -11,7 +11,7 @@ namespace isoeng::graphics::d3d12 {
 
 class Factory {
 public:
-  enum class Error { NO, ERROR_CREATION };
+  enum class Error { NO, CREATION_FAILED };
 
   [[nodiscard]] static std::expected<Factory, Error> Create();
 
@@ -22,6 +22,6 @@ private:
 
   const isoeng::pointer::win32::ComPtr<IDXGIFactory4> _factory;
 
-  Factory(const isoeng::pointer::win32::ComPtr<IDXGIFactory4> f);
+  Factory(const isoeng::pointer::win32::ComPtr<IDXGIFactory4> &&f);
 };
 } // namespace isoeng::graphics::d3d12
