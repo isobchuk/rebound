@@ -23,27 +23,35 @@ std::expected<Adapter, Adapter::Error> Adapter::Create(const isoeng::pointer::wi
       // If it is HW adapter - push it in the vector (support only HW adapters for now)
       if (!(descriptor.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)) {
         adapters.push_back(AdapterInfo(descriptor.Description, descriptor.DedicatedVideoMemory, std::move(adapter1)));
-        _log.info(string<"Found HW adapter %u: %s with dedicated video memory %u bytes.">, i, adapters.back().name, adapters.back().memory);
+        _log.info(string<"Found HW adapter [%u]: [%s] with dedicated video memory [%u] bytes.">, i, adapters.back().name, adapters.back().memory);
       }
     }
 
     // Sort with memory value (bigger memory - better)
     std::sort(adapters.begin(), adapters.end(), [](const AdapterInfo &lhs, const AdapterInfo &rhs) { return lhs.memory > rhs.memory; });
 
-    // Check if we can create device with a given adapter by priority
+    // Check feature level
+    constexpr D3D_FEATURE_LEVEL levels[] = {D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1,
+                                            D3D_FEATURE_LEVEL_11_0};
+
+    // Check if we can create device with a given adapter by priority (memory and D3D Features)
     for (auto &info : adapters) {
-      if (SUCCEEDED(D3D12CreateDevice(info.adapter1.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr))) {
-        _log.info(string<"Choosen adapter: %s">, ASCIIString(info.name));
-        isoeng::pointer::win32::ComPtr<IDXGIAdapter4> adapter4;
+      for (auto lvl : levels) {
+        if (SUCCEEDED(D3D12CreateDevice(info.adapter1.Get(), lvl, __uuidof(ID3D12Device), nullptr))) {
+          info.level = lvl;
+          _log.info(string<"Choosen adapter [%s] with feature level [%X]">, ASCIIString(info.name),
+                    static_cast<std::underlying_type_t<decltype(info.level)>>(info.level));
+          isoeng::pointer::win32::ComPtr<IDXGIAdapter4> adapter4;
 
-        // Try to convert, if can not - continue with other
-        if (FAILED(info.adapter1.As(adapter4))) {
-          _log.error(string<"Could not convert adapter1 to adapter4!">);
-          continue;
+          // Try to convert, if can not - continue with another adapter
+          if (FAILED(info.adapter1.As(adapter4))) {
+            _log.error(string<"Could not convert adapter1 to adapter4!">);
+            break;
+          }
+
+          // Choose adapter, exit
+          return Adapter(std::move(adapter4), std::move(info));
         }
-
-        // Choose adapter, exit
-        return Adapter(std::move(adapter4), std::move(info));
       }
     }
 
@@ -55,4 +63,4 @@ std::expected<Adapter, Adapter::Error> Adapter::Create(const isoeng::pointer::wi
   return std::unexpected(NO_VALID_FACTORY_PROVIDED);
 }
 
-Adapter::Adapter(isoeng::pointer::win32::ComPtr<IDXGIAdapter4> &&a, const AdapterInfo &&info) : _adapter(std::move(a)), _info(std::move(info)) {}
+Adapter::Adapter(isoeng::pointer::win32::ComPtr<IDXGIAdapter4> &&a, AdapterInfo &&info) : _adapter(std::move(a)), _info(std::move(info)) {}

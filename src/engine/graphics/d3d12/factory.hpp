@@ -11,17 +11,17 @@ namespace isoeng::graphics::d3d12 {
 
 class Factory {
 public:
-  enum class Error { NO, CREATION_FAILED };
+  enum class Error { NO, CREATE_FAILED };
 
   [[nodiscard]] static std::expected<Factory, Error> Create();
 
   [[nodiscard]] inline const isoeng::pointer::win32::ComPtr<IDXGIFactory4> &Get() const noexcept { return _factory; }
 
 private:
-  static constexpr isoeng::log::Log _log{isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"engine.graphics.drd12.factory">};
+  static constexpr isoeng::log::Log _log{isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"engine.graphics.d3d12.factory">};
 
   const isoeng::pointer::win32::ComPtr<IDXGIFactory4> _factory;
 
-  Factory(const isoeng::pointer::win32::ComPtr<IDXGIFactory4> &&f);
+  Factory(isoeng::pointer::win32::ComPtr<IDXGIFactory4> &&f);
 };
 } // namespace isoeng::graphics::d3d12

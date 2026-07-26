@@ -4,3 +4,6 @@ output/
 # IDE files
 .vscode/
 .vs/
+
+# log
+rebound.log

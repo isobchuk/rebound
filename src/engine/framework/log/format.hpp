@@ -4,7 +4,6 @@
 #include "engine/framework/log/string.hpp"
 #include "engine/framework/string.hpp"
 
-
 namespace isoeng::log {
 
 /**
@@ -211,7 +210,7 @@ class Format final {
 
   // Overload for the unsigned hexadecimals
   template <typename Type> struct SpecCheck<Specifier::UnsignedHexadecimalInteger, Type> {
-    static constexpr auto valid = std::is_unsigned_v<Type> && std::is_integral_v<Type>;
+    static constexpr auto valid = std::is_integral_v<Type>;
     static constexpr auto length = 2 * sizeof(Type) + 2;
     static_assert(valid, "ERROR: The '%X' specifier supports only unsigned integrals!");
     template <typename W> static usize formatArg(char *buffer, Type arg, const W) {

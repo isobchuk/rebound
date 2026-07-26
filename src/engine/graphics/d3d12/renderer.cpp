@@ -13,17 +13,33 @@ using namespace isoeng::graphics::d3d12;
     debug.Get()->EnableDebugLayer();
   }
 
-  const auto factory = Factory::Create();
+  auto factory = Factory::Create();
   if (!factory) {
     return std::unexpected(CREATION_ERROR_FACTORY);
   }
 
-  const auto adapter = Adapter::Create((*factory).Get());
+  auto adapter = Adapter::Create(factory->Get());
   if (!adapter) {
-    return std::unexpected(CREATION_ERROR_ADAPTER); // TODO
+    return std::unexpected(CREATION_ERROR_ADAPTER);
   }
 
-  return Renderer(std::move(*factory), std::move(*adapter));
+  auto device = Device::Create(adapter->Get(), adapter->Info().level);
+  if (!device) {
+    return std::unexpected(CREATION_ERROR_DEVICE);
+  }
+
+  auto queue = Queue::Create(device->Get());
+  if (!queue) {
+    return std::unexpected(CREATION_ERROR_COMMAND_QUEUE);
+  }
+
+  auto fence = Fence::Create(device->Get());
+  if (!fence) {
+    return std::unexpected(CREATION_ERROR_FENCE);
+  }
+
+  return Renderer(std::move(*factory), std::move(*adapter), std::move(*device), std::move(*queue), std::move(*fence));
 }
 
-Renderer::Renderer(const Factory &&f, const Adapter &&a) : _factory(std::move(f)), _adapter(std::move(a)), _device() {}
+Renderer::Renderer(Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe)
+    : _factory(std::move(f)), _adapter(std::move(a)), _device(std::move(d)), _queue(std::move(q)), _fence(std::move(fe)) {}

@@ -13,11 +13,11 @@ using namespace isoeng::graphics::d3d12;
   const auto hr = CreateDXGIFactory2(FLAGS, IID_PPV_ARGS(factory.Out()));
 
   if (FAILED(hr)) {
-    _log.error(string<"Could not create DXDI factory with hr [%d]!">, hr);
-    return std::unexpected(CREATION_FAILED);
+    _log.error(string<"Could not create DXDI factory with hr [%X]!">, hr);
+    return std::unexpected(CREATE_FAILED);
   }
 
   return Factory(std::move(factory));
 }
 
-Factory::Factory(const isoeng::pointer::win32::ComPtr<IDXGIFactory4> &&f) : _factory(std::move(f)) {}
+Factory::Factory(isoeng::pointer::win32::ComPtr<IDXGIFactory4> &&f) : _factory(std::move(f)) {}
