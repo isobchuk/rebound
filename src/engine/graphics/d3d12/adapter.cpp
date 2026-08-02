@@ -44,7 +44,7 @@ std::expected<Adapter, Adapter::Error> Adapter::Create(const isoeng::pointer::wi
           isoeng::pointer::win32::ComPtr<IDXGIAdapter4> adapter4;
 
           // Try to convert, if can not - continue with another adapter
-          if (FAILED(info.adapter1.As(adapter4))) {
+          if (FAILED(info.adapter1.As(adapter4))) [[unlikely]] {
             _log.error(string<"Could not convert adapter1 to adapter4!">);
             break;
           }

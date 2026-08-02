@@ -1,9 +1,5 @@
 #pragma once
 
-#pragma once
-
-#pragma once
-
 #include <expected>
 
 #include <d3d12.h>

@@ -26,10 +26,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
 
     log.info(isoeng::log::string<"Rebound game is here!">);
 
-    const auto renderer = isoeng::graphics::d3d12::Renderer::Create();
-
     // Register the window class.
     const wchar_t CLASS_NAME[] = L"Sample Window Class";
+
+    constexpr auto WIDTH = 1280U;
+    constexpr auto HEIGHT = 1024U;
 
     WNDCLASS wc = {};
 
@@ -46,7 +47,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
                                WS_OVERLAPPEDWINDOW,         // Window style
 
                                // Size and position
-                               CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+                               CW_USEDEFAULT, CW_USEDEFAULT, WIDTH, HEIGHT,
 
                                nullptr,   // Parent window
                                nullptr,   // Menu
@@ -57,6 +58,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
     if (hwnd == nullptr) {
       return 0;
     }
+
+    const auto renderer = isoeng::graphics::d3d12::Renderer::Create(hwnd, WIDTH, HEIGHT);
 
     ShowWindow(hwnd, nCmdShow);
 
