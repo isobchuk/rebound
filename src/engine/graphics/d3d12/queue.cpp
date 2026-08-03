@@ -30,3 +30,18 @@ std::expected<Queue, Queue::Error> Queue::Create(const isoeng::pointer::win32::C
 }
 
 Queue::Queue(isoeng::pointer::win32::ComPtr<ID3D12CommandQueue> &&q) : _queue(std::move(q)) {}
+
+Queue::Error Queue::Execute(const isoeng::pointer::win32::ComPtr<ID3D12GraphicsCommandList> &list) const noexcept {
+  using namespace isoeng::log;
+  using enum Error;
+
+  if (!list) [[unlikely]] {
+    _log.error(string<"No valid command list provided!">);
+    return NO_VALID_COMMAND_LIST_PROVIDED;
+  }
+
+  ID3D12CommandList *const commandLists[] = {list.Get()};
+  _log.info(string<"Execute [%u] command lists">, std::size(commandLists));
+  _queue.Get()->ExecuteCommandLists(std::size(commandLists), commandLists);
+  return NO;
+}

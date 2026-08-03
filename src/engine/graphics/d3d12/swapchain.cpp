@@ -67,3 +67,16 @@ std::expected<SwapChain, SwapChain::Error> SwapChain::Create(const isoeng::point
 }
 
 SwapChain::SwapChain(isoeng::pointer::win32::ComPtr<IDXGISwapChain4> &&sc, Buffers &&bufs) : _chain(std::move(sc)), _buffers(std::move(bufs)) {}
+
+SwapChain::Error SwapChain::Present() const noexcept {
+  using namespace isoeng::log;
+  using enum Error;
+
+  const auto hr = _chain.Get()->Present(1U, 0U);
+  if (FAILED(hr)) [[unlikely]] {
+    _log.error(string<"Could not get swap buffers!">);
+    return PRESENT_FAILED;
+  }
+
+  return NO;
+}

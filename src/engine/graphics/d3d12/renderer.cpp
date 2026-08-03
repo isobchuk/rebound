@@ -65,10 +65,79 @@ using namespace isoeng::graphics::d3d12;
 Renderer::Renderer(Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe, SwapChain &&sc, RTVHeap &&h, Allocator &&al, List &&l)
     : _factory(std::move(f)), _adapter(std::move(a)), _device(std::move(d)), _queue(std::move(q)), _fence(std::move(fe)), _chain(std::move(sc)),
       _heap(std::move(h)), _allocator(std::move(al)), _list(std::move(l)) {
+  using namespace isoeng::log;
 
   // Create RTV for back buffers
   const auto &buffers = _chain.GetBuffers();
   for (u32 i = 0U; i < std::size(buffers); i++) {
     _device.Get().Get()->CreateRenderTargetView(buffers[i].Get(), nullptr, _heap.CpuHandle(i));
   }
+
+  // Start pipeline
+  _log.info(string<"Start Render.">);
+
+  // Get index of the current back buffer
+  const auto index = _chain.Get().Get()->GetCurrentBackBufferIndex();
+
+  // Reset command list and command allocator
+  auto res = _list.Begin(_allocator.Get());
+  if (List::Error::NO != res) [[unlikely]] {
+    _log.error(string<"Reset command list failed with error [%d]!">, static_cast<std::underlying_type_t<decltype(res)>>(res));
+    return;
+  }
+
+  // Change state from Present to Render
+  res = _list.Transition(buffers[index], {D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET});
+  if (List::Error::NO != res) [[unlikely]] {
+    _log.error(string<"Transition from PRESENT to RENDER failed [%d]!">, static_cast<std::underlying_type_t<decltype(res)>>(res));
+    return;
+  }
+
+  // Set target buffer
+  const auto handle = _heap.CpuHandle(index);
+  _list.SetRenderTarget(handle);
+
+  // Fill Window with color
+  _list.Clear(handle, _ORANGE);
+
+  // Change state from Render to Present
+  res = _list.Transition(buffers[index], {D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT});
+  if (List::Error::NO != res) [[unlikely]] {
+    _log.error(string<"End command list failed [%d]!">, static_cast<std::underlying_type_t<decltype(res)>>(res));
+    return;
+  }
+
+  // End write the command list
+  res = _list.End();
+  if (List::Error::NO != res) [[unlikely]] {
+    _log.error(string<"Transition from PRESENT to RENDER failed [%d]!">, static_cast<std::underlying_type_t<decltype(res)>>(res));
+    return;
+  }
+
+  // Execute command list
+  if (Queue::Error::NO != _queue.Execute(_list.Get())) {
+    _log.error(string<"Execute command list failed!">);
+    return;
+  }
+
+  // Swap buffers
+  if (SwapChain::Error::NO != _chain.Present()) {
+    _log.error(string<"Present buffer failed!">);
+    return;
+  }
+
+  // Signal
+  if (Fence::Error::NO != _fence.Signal(_queue.Get())) {
+    _log.error(string<"Fence Signal failed!">);
+    return;
+  }
+
+  // Wait
+  if (Fence::Error::NO != _fence.Wait()) {
+    _log.error(string<"Fence Wait failed!">);
+    return;
+  }
+
+  // Stop pipeline
+  _log.info(string<"Stop Render.">);
 }

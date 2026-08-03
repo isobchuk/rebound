@@ -30,13 +30,34 @@ public:
   [[nodiscard]] static std::expected<Renderer, Error> Create(HWND hwnd, const u32 width, const u32 height);
 
 private:
+  static constexpr isoeng::log::Log _log{isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"engine.graphics.d3d12.renderer">};
+
+  static constexpr List::Color _BLACK{0.0f, 0.0f, 0.0f, 1.0f};
+  static constexpr List::Color _WHITE{1.0f, 1.0f, 1.0f, 1.0f};
+
+  static constexpr List::Color _RED{1.0f, 0.0f, 0.0f, 1.0f};
+  static constexpr List::Color _GREEN{0.0f, 1.0f, 0.0f, 1.0f};
+  static constexpr List::Color _BLUE{0.0f, 0.0f, 1.0f, 1.0f};
+
+  static constexpr List::Color _YELLOW{1.0f, 1.0f, 0.0f, 1.0f};
+  static constexpr List::Color _CYAN{0.0f, 1.0f, 1.0f, 1.0f};
+  static constexpr List::Color _MAGENTA{1.0f, 0.0f, 1.0f, 1.0f};
+
+  static constexpr List::Color _ORANGE{1.0f, 0.5f, 0.0f, 1.0f};
+  static constexpr List::Color _PURPLE{0.5f, 0.0f, 1.0f, 1.0f};
+  static constexpr List::Color _PINK{1.0f, 0.4f, 0.7f, 1.0f};
+
+  static constexpr List::Color _GRAY{0.5f, 0.5f, 0.5f, 1.0f};
+  static constexpr List::Color _DARK_GRAY{0.2f, 0.2f, 0.2f, 1.0f};
+  static constexpr List::Color _LIGHT_GRAY{0.8f, 0.8f, 0.8f, 1.0f};
+
   using RTVHeap = RTVHeapDescriptor<SwapChain::Count()>;
 
   const Factory _factory;
   const Adapter _adapter;
   const Device _device;
   const Queue _queue;
-  const Fence _fence;
+  Fence _fence;
   const SwapChain _chain;
   const RTVHeap _heap;
   const Allocator _allocator;

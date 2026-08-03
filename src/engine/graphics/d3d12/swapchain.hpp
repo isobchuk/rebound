@@ -20,7 +20,8 @@ public:
     NO_VALID_COMMAND_QUEUE_PROVIDED,
     CONVERSION_FAILED,
     NO_ALT_ENTER_FAILED,
-    GET_BUFFER_FAILED
+    GET_BUFFER_FAILED,
+    PRESENT_FAILED
   };
 
   [[nodiscard]] static std::expected<SwapChain, Error> Create(const isoeng::pointer::win32::ComPtr<IDXGIFactory4> &f,
@@ -32,6 +33,8 @@ public:
   using Buffers = std::array<isoeng::pointer::win32::ComPtr<ID3D12Resource>, 2U>; // double buffering
   [[nodiscard]] inline static consteval auto Count() noexcept { return std::tuple_size_v<Buffers>; }
   [[nodiscard]] inline const Buffers &GetBuffers() const noexcept { return _buffers; }
+
+  [[nodiscard]] Error Present() const noexcept;
 
 private:
   static constexpr isoeng::log::Log _log{isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"engine.graphics.d3d12.chain">};
