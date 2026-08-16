@@ -4,3 +4,6 @@ LOG_CC   = @echo   	 [CC]   Compile 	[$(notdir $@)].
 LOG_AR   = @echo   	 [AR]   Create lib 	[$(notdir $@)].
 LOG_LD   = @echo   	 [LD]   Link 		[$(notdir $@)].
 LOG_SIZE = @echo   	 [SIZE] Size 		[$(notdir $@)].
+
+# Shader compilator
+LOG_DXC  = @echo   	 [DXC]  Compile 	[$(notdir $@)].

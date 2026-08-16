@@ -27,6 +27,14 @@ public:
     CREATION_ERROR_COMMAND_LIST
   };
 
+  template <std::unsigned_integral U = u32> struct WindowSize {
+    const U _width;
+    const U _height;
+
+    constexpr WindowSize(const U w, const U h) : _width(w), _height(h) {}
+  };
+  using RenderWindowSize = WindowSize<>;
+
   [[nodiscard]] static std::expected<Renderer, Error> Create(HWND hwnd, const u32 width, const u32 height);
 
 private:
@@ -63,7 +71,9 @@ private:
   const Allocator _allocator;
   const List _list;
 
-  Renderer(Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe, SwapChain &&sc, RTVHeap &&h, Allocator &&al, List &&l);
+  const RenderWindowSize _size;
+
+  Renderer(RenderWindowSize size, Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe, SwapChain &&sc, RTVHeap &&h, Allocator &&al, List &&l);
 };
 
 } // namespace isoeng::graphics::d3d12

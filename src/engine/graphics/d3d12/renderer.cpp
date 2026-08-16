@@ -58,13 +58,15 @@ using namespace isoeng::graphics::d3d12;
     return std::unexpected(CREATION_ERROR_COMMAND_LIST);
   }
 
-  return Renderer(std::move(*factory), std::move(*adapter), std::move(*device), std::move(*queue), std::move(*fence), std::move(*chain),
+  const RenderWindowSize size{width, height};
+  return Renderer(size, std::move(*factory), std::move(*adapter), std::move(*device), std::move(*queue), std::move(*fence), std::move(*chain),
                   std::move(*heap), std::move(*allocator), std::move(*list));
 }
 
-Renderer::Renderer(Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe, SwapChain &&sc, RTVHeap &&h, Allocator &&al, List &&l)
+Renderer::Renderer(RenderWindowSize size, Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe, SwapChain &&sc, RTVHeap &&h, Allocator &&al,
+                   List &&l)
     : _factory(std::move(f)), _adapter(std::move(a)), _device(std::move(d)), _queue(std::move(q)), _fence(std::move(fe)), _chain(std::move(sc)),
-      _heap(std::move(h)), _allocator(std::move(al)), _list(std::move(l)) {
+      _heap(std::move(h)), _allocator(std::move(al)), _list(std::move(l)), _size(size) {
   using namespace isoeng::log;
 
   // Create RTV for back buffers
@@ -99,6 +101,24 @@ Renderer::Renderer(Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe, 
 
   // Fill Window with color
   _list.Clear(handle, _ORANGE);
+
+  // Set viewport (full screen for now)
+  const D3D12_VIEWPORT viewport{.TopLeftX = 0.0f,
+                                .TopLeftY = 0.0f,
+                                .Width = static_cast<f32>(_size._width),
+                                .Height = static_cast<f32>(_size._height),
+                                .MinDepth = 0.0f,
+                                .MaxDepth = 1.0f};
+  _list.ViewPort(viewport);
+
+  // Set Scissor (full screen for now)
+  const D3D12_RECT scissor{
+      .left = 0L,
+      .top = 0L,
+      .right = static_cast<LONG>(_size._width),
+      .bottom = static_cast<LONG>(_size._height),
+  };
+  _list.Scissor(scissor);
 
   // Change state from Render to Present
   res = _list.Transition(buffers[index], {D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT});

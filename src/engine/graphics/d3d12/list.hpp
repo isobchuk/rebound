@@ -43,6 +43,9 @@ public:
   void Clear(const D3D12_CPU_DESCRIPTOR_HANDLE handle, const Color &color) const noexcept;
   [[nodiscard]] Error End() const noexcept;
 
+  inline void ViewPort(const D3D12_VIEWPORT &viewport, const u32 num = 1U) const noexcept { _list.Get()->RSSetViewports(num, &viewport); }
+  inline void Scissor(const D3D12_RECT &rectangle, const u32 num = 1U) const noexcept { _list.Get()->RSSetScissorRects(num, &rectangle); }
+
 private:
   static constexpr isoeng::log::Log _log{isoeng::log::log_lvl<isoeng::log::Trace::All>, isoeng::log::string<"engine.graphics.d3d12.list">};
 
