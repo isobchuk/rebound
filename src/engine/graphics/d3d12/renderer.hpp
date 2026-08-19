@@ -9,6 +9,7 @@
 #include "engine\graphics\d3d12\list.hpp"
 #include "engine\graphics\d3d12\queue.hpp"
 #include "engine\graphics\d3d12\swapchain.hpp"
+#include "engine\graphics\shader.hpp"
 
 namespace isoeng::graphics::d3d12 {
 
@@ -72,6 +73,8 @@ private:
   const List _list;
 
   const RenderWindowSize _size;
+
+  template <Shader::Type type> using ShaderFile = Shader::File<isoeng::log::string<"shaders">, type>;
 
   Renderer(RenderWindowSize size, Factory &&f, Adapter &&a, Device &&d, Queue &&q, Fence &&fe, SwapChain &&sc, RTVHeap &&h, Allocator &&al, List &&l);
 };

@@ -102,7 +102,7 @@ template <const auto str> struct String {
    *
    * @return  Pointer to char
    */
-  consteval auto c_str() const { return string; }
+  static consteval auto c_str() { return string; }
 };
 } // namespace wrappers
 

@@ -120,6 +120,25 @@ Renderer::Renderer(RenderWindowSize size, Factory &&f, Adapter &&a, Device &&d, 
   };
   _list.Scissor(scissor);
 
+  // Get shaders bytecode
+  const auto vs = Shader::Create(ShaderFile<Shader::Type::VERTEX>::Path(string<"triangle">));
+  if (!vs) [[unlikely]] {
+    _log.error(string<"Could not create triangle Vertex shader!">);
+    return;
+  }
+
+  // const D3D12_SHADER_BYTECODE vs_bytecode{.pShaderBytecode = vs->Get().data(), .BytecodeLength = vs->Get().size()};
+
+  const auto ps = Shader::Create(ShaderFile<Shader::Type::PIXEL>::Path(string<"triangle">));
+  if (!ps) [[unlikely]] {
+    _log.error(string<"Could not create triangle Pixel shader!">);
+    return;
+  }
+
+  // const D3D12_SHADER_BYTECODE ps_bytecode{.pShaderBytecode = ps->Get().data(), .BytecodeLength = ps->Get().size()};
+
+  // Root signature
+
   // Change state from Render to Present
   res = _list.Transition(buffers[index], {D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT});
   if (List::Error::NO != res) [[unlikely]] {
